@@ -3,12 +3,20 @@ name = "ReShade_Linux_Install"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "list"
+path = "src/list.rs"
+
+[[bin]]
+name = "count"
+path = "src/g.rs"
+
 [dependencies]
 zip-extract = "0.1.1"
 fs_extra = "1.2.0"
 walkdir = "2"
 goblin = "0.5.4"
-gtk = "0.15.5" 
+gtk = "0.16.2"
 quale = "1.0.0"
 which = "4.3.0"
 rust-ini = "0.18.0"

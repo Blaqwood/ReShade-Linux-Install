@@ -1,46 +1,27 @@
 use gtk::{prelude::*};
 
-use crate::install;
+use crate::{var, install};
 
 const EXE_FILTER: &str = "*.exe";
 
-struct CheckBox {
-    main_widget: gtk::Box,
-    check_widget: gtk::CheckButton,
-    data:(&'static str, &'static str),
+struct Sh_CheckBox {
+    check_buttons: Vec<gtk::CheckButton>,
+    shader: Vec<&'static str>
 }
 
-impl CheckBox {
-    pub fn new(name: &str, link: &str) -> Self {
-        let check_button = gtk::CheckButton::new();
-        let link_to = gtk::LinkButton::with_label(link, name);
-        let main = gtk::Box::builder().orientation(gtk::Orientation::Horizontal).child(&check_button).child(&link_to).build();
-        Self {
-            main_widget: main,
-            check_widget: check_button,
-            data: (name, link),
-        }
-    }
-
-    pub fn add_widget(&self) -> &gtk::Box {
-        &self.main_widget
-    }
-
-    pub fn get_shader(&self) -> Option<(&'a str, &'a str)> { 
-        if self.check.is_active() {
-            Some(self.data)
-        }
-        else {
-            None
-        }
+impl Sh_CheckBox {
+    pub fn get_enabled(&self) -> Vec<&'static str> {
+        self.check_buttons.iter()
+            .zip(self.shader.clone())
+            .filter(|(c, s)| c.is_active())
+            .map(|(_, s)| s)
+            .collect()
     }
 }
 
 pub fn build(app: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(app);
     let main_box = gtk::Box::new(gtk::Orientation::Vertical, 10);
-
-    let stack = gtk::Stack::builder().transition_type(gtk::StackTransitionType::SlideLeft).transition_duration(300).build();
 
     let bar = gtk::ActionBar::new();
     let next = gtk::Button::with_label("Next");
@@ -71,21 +52,32 @@ pub fn build(app: &gtk::Application) {
     /* Start of Page 3 */
     let page3 = gtk::Box::new(gtk::Orientation::Vertical, 20);
 
-    let scroll_widget = gtk::ScrolledWindow::builder();
-    let list_widget = gtk::ListBox::new();
+    let lst_widget = gtk::ListBox::new();
+    let scroll_widget = gtk::ScrolledWindow::builder().child(&lst_widget);
+    
+    let lst = var::names.iter().fold((vec![], vec![]), |mut acc, (n, m)| {
+        let c = gtk::CheckButton::new();
+        let t = gtk::Label::new(Some(n));
 
+        let b = gtk::Box::new(gtk::Orientation::Horizontal, 20);
+        b.add(&c);
+        b.add(&t);
 
-    let list = install::SHADERS.iter().map(|t| {
-        (check_button, t.1)
-    }).collect::<Vec<_>>();
+        lst_widget.add(&b);
+        acc.0.push(c);
+        acc.1.push(n);
+        (acc.0, acc.1)
+    });
+
+    page3.add(&gtk::Box::builder().child(&lst_widget).build());
+    //let list = install::SHADERS.iter().map(|t| {
+//        (check_button, t.1)
+    //}).collect::<Vec<_>>();
 
     //scroll_widget.add(&list_widget);
     /* End of Page 3 */
     
-    stack.add_named(&page1, "Page1");
-    stack.add_named(&page2,"Page2");
-    stack.add_named(&page3, "Page3");
-    
+    let stack = create_stack(&[page1, page2, page3]);
     main_box.add(&bar);
     main_box.add(&stack);
 
@@ -99,6 +91,8 @@ pub fn build(app: &gtk::Application) {
     });
 
     window.add(&main_box);
+
+    window.set_default_size(400, 500);
 
     window.show_all();
 }
@@ -133,4 +127,13 @@ fn err_diag(message: &str) {
             gtk::main_quit()
         }
     });
+}
+
+fn create_stack(p: &[gtk::Box]) -> gtk::Stack {
+    let stack = gtk::Stack::builder().transition_type(gtk::StackTransitionType::SlideLeft).transition_duration(300).build();
+
+    for b in p {
+        stack.add(b);
+    }
+    stack
 }
