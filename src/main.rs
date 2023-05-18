@@ -1,14 +1,8 @@
-mod gui;
-mod install;
-mod var;
-mod list;
-
-use gtk::prelude::*;
-
-static APP_ID: &str = "com.blackwood.reshade";
+mod runtime_gui;
+mod runtime;
 
 fn main() {
-    let app = gtk::Application::builder().application_id(APP_ID).build();
-    app.connect_activate(gui::build);
+    let app = gtk::Application::builder().build();
+    app.connect_activate(runtime_gui::build);
     app.run();
 }

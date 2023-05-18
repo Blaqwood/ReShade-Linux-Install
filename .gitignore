@@ -2,3 +2,5 @@
 /target
 /*.AppDir
 /Cargo.lock
+*.exe
+*.ext
